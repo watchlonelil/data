@@ -51,7 +51,7 @@ async function run() {
     Buffer.from(process.env.AES_KEY!, "base64"),
     { name: "AES-GCM" },
     true,
-    ["encrypt", "de crypt"]
+    ["encrypt", "decrypt"]
   );
 
   const encrypted = await webcrypto.subtle.encrypt(
