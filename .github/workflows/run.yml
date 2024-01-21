@@ -1,0 +1,51 @@
+name: Run
+
+on:
+  push:
+    paths:
+      - src/**
+      - .github/workflows/run.yml
+
+  schedule:
+    - cron: "0 * * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "run"
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Run
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          pnpm i
+          pnpm start
+
+      - name: Push to GitHub
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .
+          git diff --staged --quiet || git commit -m "Update ($(date +'%Y-%m-%dT%H:%M:%S'))"
+          git push
