@@ -32,7 +32,7 @@ async function run() {
             return {
               id:
                 cha !== -1
-                  ? cha.toString()
+                  ? (cha + 1).toString()
                   : `other/${channel.channel_name}/${channel.channel_id}`,
               name: channel.channel_name,
             };
