@@ -2,7 +2,7 @@
   "name": "schedule",
   "version": "1.0.0",
   "description": "",
-  "main": "src/decrypt.ts",
+  "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsx ."
