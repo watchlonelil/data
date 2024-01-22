@@ -17,6 +17,7 @@ async function run() {
   const results = Object.entries(schedule).map(([key, value]) => {
     return {
       name: key.replaceAll("Tv", "TV"),
+      isScoresEnabled: !["tv shows"].includes(key.toLowerCase()),
       events: (value as any[]).map((event: any) => {
         const dateObj = new Date();
         const timeParts = event.time.split(":");
