@@ -49,7 +49,7 @@ async function run() {
 
   const key = await webcrypto.subtle.importKey(
     "raw",
-    Buffer.from(process.env.AES_KEY!, "base64"),
+    Buffer.from(process.env.PUBLIC_AES_KEY!, "base64"),
     { name: "AES-GCM" },
     true,
     ["encrypt", "decrypt"]

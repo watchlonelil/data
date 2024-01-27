@@ -40,7 +40,7 @@ jobs:
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
           pnpm i
-          pnpm start
+          pnpm start & pnpm start:iptv
 
       - name: Push to GitHub
         run: |
