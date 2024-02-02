@@ -68,7 +68,7 @@ async function run() {
   const ivBase64 = Buffer.from(iv).toString("base64");
 
   writeFileSync(
-    "./data.json",
+    "./schedule.json",
     JSON.stringify({
       iv: ivBase64,
       data: encryptedBase64,
