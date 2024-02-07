@@ -2,6 +2,8 @@ import "dotenv/config";
 import { writeFileSync } from "fs";
 import { channels } from "./channels";
 import { webcrypto } from "crypto";
+import { ofetch } from "ofetch";
+import { load } from "cheerio";
 
 async function run() {
   const data = await fetch(process.env.SCHEDULE_API!, {
@@ -14,7 +16,7 @@ async function run() {
 
   const schedule: any = Object.values(data)[0];
 
-  const results = Object.entries(schedule).map(([key, value]) => {
+  let results = Object.entries(schedule).map(([key, value]) => {
     return {
       name: key.replaceAll("Tv", "TV"),
       isScoresEnabled: !["tv shows"].includes(key.toLowerCase()),
@@ -33,8 +35,8 @@ async function run() {
             return {
               id:
                 cha !== -1
-                  ? (cha + 1).toString()
-                  : `other/${channel.channel_name}/${channel.channel_id}`,
+                  ? `tv/1/${(cha + 1).toString()}`
+                  : `tv/other/${channel.channel_name}/${channel.channel_id}`,
               name: channel.channel_name,
             };
           }),
@@ -42,6 +44,36 @@ async function run() {
       }),
     };
   });
+
+  // Concerts - Eras Tour
+
+  try {
+    const erasTourPage = await ofetch("https://tstheerastour.taylorswift.com/");
+    const $ = load(erasTourPage);
+    const raw = JSON.parse($("script#__NEXT_DATA__").text());
+    const shows = raw.props.pageProps.data.shows;
+    results.push({
+      name: "Taylor Swift: The Eras Tour",
+      isScoresEnabled: false,
+      events: shows
+        .filter(
+          (show: any) =>
+            new Date(show.date).toDateString() === new Date().toDateString()
+        )
+        .map((show: any) => ({
+          name: show.show,
+          time: new Date(show.date),
+          channels: [
+            {
+              id: "event/eras-tour",
+              name: "Taylor Swift: The Eras Tour",
+            },
+          ],
+        })),
+    });
+  } catch (err) {
+    console.error("Eras Tour Error", err);
+  }
 
   const dataBuffer = new TextEncoder().encode(JSON.stringify(results));
 
