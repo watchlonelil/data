@@ -7,7 +7,7 @@ on:
       - .github/workflows/run.yml
 
   schedule:
-    - cron: "0 */12 * * *"
+    - cron: "0 */6 * * *"
 
   workflow_dispatch:
 
