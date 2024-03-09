@@ -3,6 +3,6 @@
     "icon": "ic:baseline-info",
     "title": "Join our Discord Server for latest updates!",
     "body": "",
-    "action": { "link": "/discord", "text": "Join Now" }
+    "action": { "link": "https://discord.com/invite/BKts6Jb5sA", "text": "Join Now" }
   }
 ]
