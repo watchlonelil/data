@@ -1,0 +1,66 @@
+name: Run
+
+on:
+  push:
+    paths:
+      - src/**
+      - .github/workflows/run.yml
+
+  schedule:
+    - cron: "*/5 * * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "run"
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    services:
+      vlrggapi:
+        image: ghcr.io/axsddlr/vlrggapi:latest
+        ports:
+           - 3001:3001
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Prepare environment
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          bun install --frozen-lockfile
+      
+      - name: Run
+        run: |
+          bun run src/schedule.ts &
+          bun run src/tv/1/domain.ts
+
+      - name: Push to GitHub
+        run: |
+          git config user.name lonelilbot
+          git config user.email 173731455+lonelilbot@users.noreply.github.com
+          git add .
+          git commit -m "Update ($(date +'%Y-%m-%dT%H:%M:%S'))
+          
+          Co-authored-by: lonelil <51315646+lonelil@users.noreply.github.com>
+          Co-authored-by: Thereallo1026 <thereallo1026@gmail.com>" || exit 0
+          git push
+
+  del_runs:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          retain_days: 0
+          keep_minimum_runs: 9
