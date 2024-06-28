@@ -19,7 +19,7 @@ try {
     existing = await decrypt(await file.text(), Bun.env.PUBLIC_AES_KEY!);
   }
 
-  const data = await ofetch(Bun.env.SCHEDULE_API!, {
+  /* const data = await ofetch(Bun.env.SCHEDULE_API!, {
     headers: {
       Referer: Bun.env.SCHEDULE_API_REFERER!,
       "User-Agent":
@@ -56,7 +56,9 @@ try {
         };
       }),
     };
-  });
+  });*/
+
+  let results: any[] = [];
 
   try {
     const matches = (
