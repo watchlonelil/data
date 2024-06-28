@@ -39,8 +39,7 @@ jobs:
       
       - name: Run
         run: |
-          bun run src/schedule.ts &
-          bun run src/tv/1/domain.ts
+          bun run src/schedule.ts
 
       - name: Push to GitHub
         run: |
