@@ -3,6 +3,7 @@ import UserAgent from "user-agents";
 import { load } from "cheerio";
 import encrypt from "../../encrypt";
 import decrypt from "../../decrypt";
+import { getRootDomain } from "../../utils";
 
 const id = "345";
 const filePath = `./data/tv1-domain.json`;
@@ -47,6 +48,8 @@ try {
   const body = {
     url: final,
     player: new URL(playerUrl!).origin,
+    playerDomain: new URL(playerUrl!).origin,
+    streamDomain: getRootDomain(stream),
   };
 
   const bodyString = JSON.stringify(body);
