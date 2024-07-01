@@ -60,7 +60,7 @@ try {
       const body = {
         name: event.title,
         time: event.date,
-        channels: [{ id: `tv/sport/${event.id}`, name: event.title }],
+        channels: [{ id: `sport/${event.id}`, name: event.title }],
       };
 
       if (existing) {
