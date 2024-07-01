@@ -151,6 +151,8 @@ try {
     if (!Bun.env.CI) console.error("valorant", error);
   }
 
+  console.log(results);
+
   if (Bun.hash(JSON.stringify(results)) === Bun.hash(existing!)) {
     console.log("No changes");
     process.exit(0);
