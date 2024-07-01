@@ -74,7 +74,8 @@ try {
       }
     }
   } catch (error) {
-    if (!Bun.env.CI) console.error("sports", error);
+    // if (!Bun.env.CI) console.error("sports", error);
+    console.error("sports", error);
   }
 
   try {
