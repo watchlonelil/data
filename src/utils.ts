@@ -6,3 +6,7 @@ export function getRootDomain(url: string): string {
   }
   return urlObj.hostname;
 }
+
+export function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

@@ -1,10 +1,12 @@
-import { channels } from "./channels";
 import { ofetch } from "ofetch";
 import encrypt from "./encrypt";
 import decrypt from "./decrypt";
 import { load } from "cheerio";
+import UserAgent from "user-agents";
+import JSON5 from "json5";
+import { capitalize } from "./utils";
 
-const filePath = "./data/schedule.json";
+const filePath = "./data/schedule-july-2024.json";
 const file = Bun.file(filePath);
 
 const valorant = ofetch.create({
@@ -13,52 +15,67 @@ const valorant = ofetch.create({
     : "https://vlrggapi.vercel.app",
 });
 
+type Channel = {
+  id: string;
+  name: string;
+};
+
+type Event = {
+  name: string;
+  time: number;
+  channels: Channel[];
+};
+
+type Schedule = {
+  name: string;
+  isScoresEnabled: boolean;
+  events: Event[];
+};
+
 try {
   let existing = null;
   if (await file.exists()) {
     existing = await decrypt(await file.text(), Bun.env.PUBLIC_AES_KEY!);
   }
 
-  /* const data = await ofetch(Bun.env.SCHEDULE_API!, {
-    headers: {
-      Referer: Bun.env.SCHEDULE_API_REFERER!,
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
-    },
-  });
+  let results: Schedule[] = [];
 
-  const schedule: any = Object.values(data)[0];
+  try {
+    const page = await ofetch(Bun.env.SPORTS_API!, {
+      headers: {
+        "User-Agent": new UserAgent().toString(),
+      },
+    });
+    const dataRegex = /const data = (\[.*?\]);/s;
+    const match = page.match(dataRegex);
+    const dataString = match[1];
 
-  let results = Object.entries(schedule).map(([key, value]) => {
-    return {
-      name: key.replaceAll("Tv", "TV"),
-      isScoresEnabled: !["tv shows"].includes(key.toLowerCase()),
-      events: (value as any[]).map((event: any) => {
-        const dateObj = new Date();
-        const timeParts = event.time.split(":");
-        dateObj.setUTCHours(timeParts[0], timeParts[1], 0, 0);
+    const data = JSON5.parse(dataString);
+    const events = data[1].data.liveMatches;
 
-        return {
-          name: event.event.replaceAll("amp;", ""),
-          time: dateObj.getTime(),
-          channels: event.channels.map((channel: any) => {
-            const cha = channels.findIndex(
-              (c: any) => c.id === channel.channel_id
-            );
-            return {
-              id:
-                cha !== -1
-                  ? `tv/1/${(cha + 1).toString()}`
-                  : `tv/other/${channel.channel_name}/${channel.channel_id}`,
-              name: channel.channel_name,
-            };
-          }),
-        };
-      }),
-    };
-  });*/
+    for (const event of events) {
+      const category = capitalize(event.category);
+      const existing = results.find((r) => r.name === category);
 
-  let results: any[] = [];
+      const body = {
+        name: event.title,
+        time: event.date,
+        channels: [{ id: `tv/sport/${event.id}`, name: event.title }],
+      };
+
+      if (existing) {
+        existing.events.push(body);
+      } else {
+        results.push({
+          name: category,
+          isScoresEnabled: true,
+          events: [body],
+        });
+      }
+    }
+  } catch (error) {
+    if (!Bun.env.CI) console.error("sports", error);
+  }
 
   try {
     const matches = (
@@ -106,14 +123,14 @@ try {
                   .trim();
                 let id = $(element)
                   .find(".match-streams-btn-external")
-                  .attr("href");
+                  .attr("href")!;
 
                 if (name && !id) {
                   name = $(element)
                     .find(".match-streams-btn-embed span")
                     .text()
                     .trim();
-                  id = $(element).attr("href");
+                  id = $(element).attr("href")!;
                 }
 
                 return { name, id };
