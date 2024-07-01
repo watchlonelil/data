@@ -74,8 +74,7 @@ try {
       }
     }
   } catch (error) {
-    // if (!Bun.env.CI) console.error("sports", error);
-    console.error("sports", error);
+    if (!Bun.env.CI) console.error("sports", error);
   }
 
   try {
@@ -150,8 +149,6 @@ try {
   } catch (error) {
     if (!Bun.env.CI) console.error("valorant", error);
   }
-
-  console.log(results);
 
   if (Bun.hash(JSON.stringify(results)) === Bun.hash(existing!)) {
     console.log("No changes");
