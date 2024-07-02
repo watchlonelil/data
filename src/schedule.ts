@@ -5,6 +5,7 @@ import { load } from "cheerio";
 import UserAgent from "user-agents";
 import JSON5 from "json5";
 import { capitalize } from "./utils";
+import { channels } from "./channels";
 
 const filePath = "./data/schedule-july-2024.json";
 const file = Bun.file(filePath);
@@ -39,6 +40,45 @@ try {
   }
 
   let results: Schedule[] = [];
+
+  try {
+    const data = await ofetch(Bun.env.SCHEDULE_API!, {
+      headers: {
+        Referer: Bun.env.SCHEDULE_API_REFERER!,
+        "User-Agent": new UserAgent().toString(),
+      },
+    });
+    const schedule: any = Object.values(data)[0];
+    Object.entries(schedule).forEach(([key, value]) => {
+      results.push({
+        name: key.replaceAll("Tv", "TV"),
+        isScoresEnabled: !["tv shows"].includes(key.toLowerCase()),
+        events: (value as any[]).map((event: any) => {
+          const dateObj = new Date();
+          const timeParts = event.time.split(":");
+          dateObj.setUTCHours(timeParts[0], timeParts[1], 0, 0);
+          return {
+            name: event.event.replaceAll("amp;", ""),
+            time: dateObj.getTime(),
+            channels: event.channels.map((channel: any) => {
+              const cha = channels.findIndex(
+                (c: any) => c.id === channel.channel_id
+              );
+              return {
+                id:
+                  cha !== -1
+                    ? `tv/1/${(cha + 1).toString()}`
+                    : `tv/other/${channel.channel_name}/${channel.channel_id}`,
+                name: channel.channel_name,
+              };
+            }),
+          };
+        }),
+      });
+    });
+  } catch (error) {
+    if (!Bun.env.CI) console.error("tv1", error);
+  }
 
   try {
     const page = await ofetch(Bun.env.SPORTS_API!, {
