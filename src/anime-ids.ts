@@ -5,10 +5,18 @@ const data = await ofetch(
 );
 
 const filtered = data.filter((anime: any) => anime.anilist_id);
+const tmdb_filtered = data.filter((anime: any) => anime.themoviedb_id);
 
 for (const anime of filtered) {
   await Bun.write(
     `./data/anime-ids/${anime.anilist_id}.json`,
+    JSON.stringify(anime)
+  );
+}
+
+for (const anime of tmdb_filtered) {
+  await Bun.write(
+    `./data/tmdb-anime-ids/${anime.themoviedb_id}.json`,
     JSON.stringify(anime)
   );
 }
