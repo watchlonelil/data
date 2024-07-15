@@ -3,9 +3,9 @@ import encrypt from "./encrypt";
 import decrypt from "./decrypt";
 import { load } from "cheerio";
 import UserAgent from "user-agents";
-import JSON5 from "json5";
 import { capitalize } from "./utils";
 import { channels } from "./channels";
+import vm from "vm";
 
 const filePath = "./data/schedule-july-2024.json";
 const file = Bun.file(filePath);
@@ -51,8 +51,10 @@ try {
     const match = page.match(dataRegex);
     const dataString = match[1];
 
-    const data = JSON5.parse(dataString);
-    const events = data[1].data.liveMatches;
+    const script = new vm.Script(`const data = ${dataString}; data`);
+    const data = script.runInContext(vm.createContext({}));
+
+    const events: any[] = Object.values(data[1].data).flat();
 
     for (const event of events) {
       const category = capitalize(event.category);
@@ -115,7 +117,7 @@ try {
             $(".match-streams-container .wf-card")
               .filter(
                 (_, element) =>
-                  !!$(element).find(".match-streams-btn-embed span").text()
+                  !!$(element).find(".match-streams-btn-embed span").text(),
               )
               .map(async (_, element) => {
                 let name = $(element)
@@ -136,7 +138,7 @@ try {
 
                 return { name, id };
               })
-              .get()
+              .get(),
           );
 
           return {
@@ -144,7 +146,7 @@ try {
             time: date.getTime(),
             channels: streams,
           };
-        })
+        }),
       ),
     });
   } catch (error) {
@@ -159,8 +161,8 @@ try {
   Bun.write(
     filePath,
     JSON.stringify(
-      await encrypt(Bun.env.PUBLIC_AES_KEY!, JSON.stringify(results))
-    )
+      await encrypt(Bun.env.PUBLIC_AES_KEY!, JSON.stringify(results)),
+    ),
   );
 } catch (error) {
   if (!Bun.env.CI) console.error(error);
