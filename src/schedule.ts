@@ -47,7 +47,7 @@ try {
     });
 
     for (const event of events) {
-      const category = event.category;
+      const category = capitalize(event.category);
       const existing = results.find((r) => r.name === category);
 
       const body = {
