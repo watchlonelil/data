@@ -4,8 +4,6 @@ import decrypt from "./decrypt";
 import { load } from "cheerio";
 import UserAgent from "user-agents";
 import { capitalize } from "./utils";
-import { channels } from "./channels";
-import vm from "vm";
 
 const filePath = "./data/schedule-july-2024.json";
 const file = Bun.file(filePath);
@@ -42,26 +40,18 @@ try {
   let results: Schedule[] = [];
 
   try {
-    const page = await ofetch(Bun.env.SPORTS_API!, {
+    const events = await ofetch(Bun.env.SPROTS_API!, {
       headers: {
         "User-Agent": new UserAgent().toString(),
       },
     });
-    const dataRegex = /const data = (\[.*?\]);/s;
-    const match = page.match(dataRegex);
-    const dataString = match[1];
-
-    const script = new vm.Script(`const data = ${dataString}; data`);
-    const data = script.runInContext(vm.createContext({}));
-
-    const events: any[] = Object.values(data[1].data).flat();
 
     for (const event of events) {
-      const category = capitalize(event.category);
+      const category = event.category;
       const existing = results.find((r) => r.name === category);
 
       const body = {
-        name: event.title,
+        name: `${event.league ? `${event.league} - ` : ""}${event.title}`,
         time: event.date,
         channels: [{ id: `sport/${event.id}`, name: event.title }],
       };
@@ -75,7 +65,27 @@ try {
           events: [body],
         });
       }
+
+      if (event.league && event.league.includes("Olympic")) {
+        const olympic = results.find((r) => r.name === "Olympic");
+
+        if (olympic) {
+          olympic.events.push(body);
+        } else {
+          results.push({
+            name: "Olympic",
+            isScoresEnabled: true,
+            events: [body],
+          });
+        }
+      }
     }
+
+    results = results.sort((a, b) => {
+      if (a.name === "Olympic") return -1;
+      if (b.name === "Olympic") return 1;
+      return 0;
+    });
   } catch (error) {
     if (!Bun.env.CI) console.error("sports", error);
   }
