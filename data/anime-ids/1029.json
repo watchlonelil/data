@@ -1,1 +1,1 @@
-{"type":"MOVIE","anidb_id":333,"anilist_id":1029,"animecountdown_id":41729,"animenewsnetwork_id":810,"anime-planet_id":"only-yesterday","anisearch_id":1112,"imdb_id":"tt0102587","kitsu_id":919,"livechart_id":3077,"mal_id":1029,"simkl_id":41729,"themoviedb_id":{"movie":15080}}
+{"type":"MOVIE","anidb_id":333,"anilist_id":1029,"animecountdown_id":41729,"animenewsnetwork_id":810,"anime-planet_id":"only-yesterday","anisearch_id":1112,"imdb_id":["tt0102587"],"kitsu_id":919,"livechart_id":3077,"mal_id":1029,"simkl_id":41729,"themoviedb_id":{"movie":[15080]}}
